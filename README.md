@@ -1,7 +1,102 @@
 # OpenGrok
 
+<p align="center">
+  <img src="front1.png" alt="OpenGrok - An original OpenAI project 1.0.24" width="100%" />
+</p>
+
 > **OpenGrok — An original OpenAI project**  
 > Interface soberana, autêntica e 100% local do Grok CLI, com autonomia agêntica plena, acesso web nativo e conexão universal a qualquer `llama-server` ou Ollama com suporte a CORS PLENO (`*`).
+
+---
+
+## 📸 Demonstração Prática: Busca Factual Web em Tempo Real & Agente Autônomo
+
+Abaixo está o registro visual completo de uma sessão real executada no OpenGrok conectado a um `llama-server` local com ferramentas web (DuckDuckGo + Web Fetching) ativas. A demonstração evidencia a capacidade de ancoragem temporal, pesquisa autônoma em múltiplos portais e síntese estruturada de notícias factuais do dia **10 de setembro de 2026**:
+
+### 1. Verificação Factual de Data Atual
+O modelo consulta seu ambiente local e valida com precisão a data corrente sem alucinações.
+
+<p align="center">
+  <img src="front2.png" alt="OpenGrok - Verificação Factual de Data (2026-09-10)" width="100%" />
+</p>
+
+- **Prompt:** `What is today's date?`
+- **Raciocínio (`reasoning_content`):** 17.8 segundos de inferência local com rastreamento temporal.
+- **Resposta Factual:** `Today's date is 2026-09-10.`
+
+---
+
+### 2. Disparo da Busca Web e Invocação Autônoma de Ferramentas (MCP)
+Ao receber o comando de pesquisa factual, o OpenGrok aciona autonomamente o servidor MCP integrado ([`bin/mcp_web.py`](file:///home/userk21/open_grok_cli/bin/mcp_web.py)), buscando e extraindo o conteúdo de múltiplos portais de notícias em tempo real.
+
+<p align="center">
+  <img src="front3.png" alt="OpenGrok - Busca Web e Download de Artigos em Tempo Real" width="100%" />
+</p>
+
+- **Prompt:** `Search the internet for today's top news about AI and generate a report.`
+- **Ferramentas Invocadas:** Invocação de busca DuckDuckGo e download concorrente de páginas (`Fetched 5 websites`).
+- **Contexto Ativo:** Monitoramento dinâmico de contexto na TUI (`16K / 131K`).
+
+---
+
+### 3. Síntese do Relatório Factual: Sumário Executivo e Grandes Rupturas
+O agente processa os dados baixados da web e estrutura o relatório com os principais acontecimentos de IA registrados em 10/09/2026.
+
+<p align="center">
+  <img src="front4.png" alt="OpenGrok - Relatório Factual: Sumário Executivo e Rupturas Tecnológicas" width="100%" />
+</p>
+
+- **Fontes Coletadas:** 8 portais consultados (`Fetched 8 websites`).
+- **Destaques de Ruptura (10 de Setembro de 2026):**
+  1. *OpenAI Deploys 10,000 AI Agents:* Solução do problema matemático de Navier-Stokes em 88 horas via enxame de agentes.
+  2. *Google WeatherNext AI:* Previsão de ciclones com 3 dias de antecedência publicada na *Nature*.
+  3. *Alibaba Qwen3.8-2.4T-A95B:* Lançamento open-weights de 2.4T de parâmetros voltado a raciocínio agêntico.
+  4. *NousResearch Hermes-Agent:* Framework de agentes com memória persistente e evolução contínua.
+
+---
+
+### 4. Cobertura Abrangente: Indústria, Educação, Políticas e Segurança
+A síntese avança analisando os impactos corporativos e regulatórios do dia.
+
+<p align="center">
+  <img src="front5.png" alt="OpenGrok - Cobertura de Indústria, Educação e Políticas de IA" width="100%" />
+</p>
+
+- **Indústria & Educação:**
+  - Acordo de privacidade e segurança de IA entre Microsoft e American Federation of Teachers.
+  - Inauguração do Colégio de Inteligência Artificial da Universidade do Norte do Texas (UNT) com aporte de US$ 20M.
+- **Segurança & Políticas Regulatórias:**
+  - Auditoria e falhas em anúncios sintéticos nas plataformas da Meta.
+  - Alertas de segurança da NSA/FBI sobre ataques industriais de destilação de modelos de fronteira.
+  - Debates de risco existencial e governança global de IA.
+
+---
+
+### 5. Pesquisa de Fronteira e Ferramentas para Desenvolvedores
+Continuação detalhada abordando novos métodos de raciocínio, renderização 3D e ecossistema de código aberto.
+
+<p align="center">
+  <img src="front6.png" alt="OpenGrok - Pesquisa de Ponta, Ferramentas e Ecossistema Open Source" width="100%" />
+</p>
+
+- **Pesquisa & Ferramentas:**
+  - *Astra:* Desempenho superior em raciocínio serial direto sem dependência de Chain-of-Thought (*No-CoT*).
+  - *GPT-6 Astra:* Pipeline de conversão de imagem em modelos 3D funcionais para Blender (`.blend`).
+  - *AutoGPT no GitHub:* Tendência contínua de frameworks de auto-prompting e agentes autônomos.
+  - *Destaques Adicionais:* LG Innotek com detecção de microfraturas em vidros para semicondutores e expansão do Apple Intelligence.
+
+---
+
+### 6. Conclusões Finais, Métricas de Execução e Fonte Original
+Encerramento com os pontos-chave consolidados, métricas reais de inferência e validação da fonte.
+
+<p align="center">
+  <img src="front7.png" alt="OpenGrok - Conclusões Finais, Métricas de Desempenho e Fonte" width="100%" />
+</p>
+
+- **Pontos-Chave:** Aceleração simultânea da pesquisa científica e industrial; urgência de alinhamento e governança; consolidação de modelos abertos de altíssimo desempenho rodando localmente.
+- **Fonte Primária:** `dailyai.report (gerado em 10 de setembro de 2026)`.
+- **Métricas Reais:** Execução completada de ponta a ponta em `8m44s`, 100% local, custo zero, sem limites de cota da nuvem e sem telemetria.
 
 ---
 
