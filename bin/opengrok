@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# opengrok / open-grok — Launcher Soberano e Universal para o Grok CLI
+# Conecta-se a qualquer llama-server com suporte agêntico, web e CORS PLENO.
+# ==============================================================================
+
+set -eo pipefail
+
+# 1. Resolver diretório base
+TARGET="${BASH_SOURCE[0]}"
+if command -v realpath >/dev/null 2>&1; then
+    TARGET="$(realpath "$TARGET")"
+elif command -v readlink >/dev/null 2>&1; then
+    TARGET="$(readlink -f "$TARGET")"
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$TARGET")" && pwd)"
+BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+BIN_PATH="$BASE_DIR/downloads/grok-1.0.24-linux-x86_64"
+XZ_PATH="${BIN_PATH}.xz"
+
+# Auto-descompactação na primeira execução (se clonado do git)
+if [[ ! -f "$BIN_PATH" || $(stat -c%s "$BIN_PATH" 2>/dev/null || echo 0) -lt 50000000 ]]; then
+    if [[ -f "$XZ_PATH" ]]; then
+        echo "OpenGrok: Descompactando motor nativo pela primeira vez..." >&2
+        python3 -c "
+import lzma, shutil, os, sys
+src = '$XZ_PATH'
+dst = '$BIN_PATH'
+tmp = dst + '.tmp'
+with lzma.open(src, 'rb') as f_in, open(tmp, 'wb') as f_out:
+    shutil.copyfileobj(f_in, f_out)
+os.replace(tmp, dst)
+os.chmod(dst, 0o755)
+"
+    else
+        echo "Erro: Binário Grok não encontrado em: $BIN_PATH" >&2
+        exit 1
+    fi
+fi
+chmod +x "$BIN_PATH" 2>/dev/null || true
+
+# Auto-heal config.toml se a pasta foi movida ou clonada em outro caminho
+if [[ -f "$BASE_DIR/config.toml" ]]; then
+    python3 -c "
+import re, os
+cfg_path = '$BASE_DIR/config.toml'
+base_dir = '$BASE_DIR'
+with open(cfg_path, 'r', encoding='utf-8') as f:
+    content = f.read()
+new_content = re.sub(r'\"[^\"]+/bin/mcp_web\.py\"', f'\"{base_dir}/bin/mcp_web.py\"', content)
+new_content = re.sub(r'\"[^\"]+/bundled/skills\"', f'\"{base_dir}/bundled/skills\"', new_content)
+new_content = re.sub(r'\"[^\"]+/skills\"', f'\"{base_dir}/skills\"', new_content)
+new_content = re.sub(r'\"[^\"]+/rules\"', f'\"{base_dir}/rules\"', new_content)
+if new_content != content:
+    with open(cfg_path, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+" >/dev/null 2>&1 || true
+fi
+
+# 2. Argumentos de configuração do llama-server
+USUAL_PORTS=(5173 8080 8081 11434 5000 8000 9090)
+TARGET_HOST="${LLAMA_HOST:-127.0.0.1}"
+TARGET_PORT="${LLAMA_PORT:-}"
+TARGET_URL="${LLAMA_URL:-${OPENAI_BASE_URL:-}}"
+PASSTHROUGH_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --llama-url)
+            TARGET_URL="$2"
+            shift 2
+            ;;
+        --llama-url=*)
+            TARGET_URL="${1#*=}"
+            shift
+            ;;
+        --llama-host)
+            TARGET_HOST="$2"
+            shift 2
+            ;;
+        --llama-host=*)
+            TARGET_HOST="${1#*=}"
+            shift
+            ;;
+        --llama-port)
+            TARGET_PORT="$2"
+            shift 2
+            ;;
+        --llama-port=*)
+            TARGET_PORT="${1#*=}"
+            shift
+            ;;
+        *)
+            PASSTHROUGH_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+check_endpoint() {
+    local url="$1"
+    if curl -s -m 0.4 "${url}/health" >/dev/null 2>&1 || \
+       curl -s -m 0.4 "${url}/v1/models" >/dev/null 2>&1 || \
+       curl -s -m 0.4 "${url}/models" >/dev/null 2>&1; then
+        return 0
+    fi
+    return 1
+}
+
+# 3. Descobrir endpoint do llama-server
+if [[ -n "$TARGET_URL" ]]; then
+    CLEAN_URL="${TARGET_URL%/v1}"
+    CLEAN_URL="${CLEAN_URL%/}"
+    UPSTREAM_URL="$CLEAN_URL"
+elif [[ -n "$TARGET_PORT" ]]; then
+    UPSTREAM_URL="http://${TARGET_HOST}:${TARGET_PORT}"
+else
+    DETECTED_PORT=""
+    for p in "${USUAL_PORTS[@]}"; do
+        if check_endpoint "http://${TARGET_HOST}:${p}"; then
+            DETECTED_PORT="$p"
+            break
+        fi
+    done
+    if [[ -n "$DETECTED_PORT" ]]; then
+        UPSTREAM_URL="http://${TARGET_HOST}:${DETECTED_PORT}"
+    else
+        UPSTREAM_URL="http://${TARGET_HOST}:5173"
+    fi
+fi
+
+# 4. Assegurar que o bridge local com CORS PLENO (porta 5174) está ativo
+BRIDGE_PORT=5174
+BRIDGE_URL="http://127.0.0.1:${BRIDGE_PORT}"
+SERVER_PY="$BASE_DIR/open_grok_server.py"
+
+if [[ -f "$SERVER_PY" ]]; then
+    NEED_START=false
+    if ! curl -s -m 0.4 "${BRIDGE_URL}/health" >/dev/null 2>&1; then
+        NEED_START=true
+    else
+        HEALTH_JSON=$(curl -s -m 0.4 "${BRIDGE_URL}/health" 2>/dev/null || echo "{}")
+        CURR_UPSTREAM=$(echo "$HEALTH_JSON" | grep -o '"upstream": *"[^"]*"' | cut -d'"' -f4 || true)
+        if [[ -n "$CURR_UPSTREAM" && "$CURR_UPSTREAM" != "$UPSTREAM_URL" ]]; then
+            python3 "$SERVER_PY" --stop >/dev/null 2>&1 || true
+            NEED_START=true
+        fi
+    fi
+
+    if [[ "$NEED_START" == "true" ]]; then
+        python3 "$SERVER_PY" --port "$BRIDGE_PORT" --upstream "$UPSTREAM_URL" --daemon >/dev/null 2>&1 || true
+        # Aguardar inicialização rápida
+        for _ in {1..10}; do
+            if curl -s -m 0.2 "${BRIDGE_URL}/health" >/dev/null 2>&1; then
+                break
+            fi
+            sleep 0.1
+        done
+    fi
+fi
+
+# 5. Configurar ambiente para o binário original do Grok
+export GROK_HOME="$BASE_DIR"
+export XAI_API_KEY="${XAI_API_KEY:-local-llama-server}"
+export GROK_TELEMETRY_ENABLED=0
+export GROK_FEEDBACK_ENABLED=0
+export GROK_AUTO_UPDATE=0
+export OTEL_SDK_DISABLED=true
+export GROK_SUBAGENTS=1
+export GROK_WEB_FETCH=1
+export GROK_DEFAULT_MODEL="${GROK_DEFAULT_MODEL:-local-llama}"
+export PATH="$BASE_DIR/vendor:$BASE_DIR/bin:$PATH"
+
+# Se o bridge estiver ativo, apontar endpoints para ele
+if curl -s -m 0.3 "${BRIDGE_URL}/health" >/dev/null 2>&1; then
+    export GROK_MODELS_BASE_URL="${BRIDGE_URL}/v1"
+    export GROK_MODELS_LIST_URL="${BRIDGE_URL}/v1/models"
+    export GROK_CLI_CHAT_PROXY_BASE_URL="${BRIDGE_URL}/v1"
+    export GROK_XAI_API_BASE_URL="${BRIDGE_URL}/v1"
+    export OPENAI_BASE_URL="${BRIDGE_URL}/v1"
+else
+    # Fallback direto para o llama-server se o bridge não puder iniciar
+    export GROK_MODELS_BASE_URL="${UPSTREAM_URL}/v1"
+    export GROK_MODELS_LIST_URL="${UPSTREAM_URL}/v1/models"
+    export GROK_CLI_CHAT_PROXY_BASE_URL="${UPSTREAM_URL}/v1"
+    export GROK_XAI_API_BASE_URL="${UPSTREAM_URL}/v1"
+    export OPENAI_BASE_URL="${UPSTREAM_URL}/v1"
+fi
+
+# 6. Executar binário Grok
+exec "$BIN_PATH" "${PASSTHROUGH_ARGS[@]}"

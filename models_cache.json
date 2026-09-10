@@ -1,0 +1,49 @@
+{
+  "fetched_at": "2026-09-10T00:30:51.402413150Z",
+  "grok_version": "1.0.24",
+  "auth_method": "api_key",
+  "origin": "http://127.0.0.1:8997/v1/models",
+  "models": {
+    "local-model": {
+      "info": {
+        "id": "local-model",
+        "model": "local-model",
+        "base_url": "http://127.0.0.1:8997/v1",
+        "name": "local-model",
+        "description": null,
+        "max_completion_tokens": null,
+        "temperature": null,
+        "top_p": null,
+        "api_backend": "chat_completions",
+        "auth_scheme": "bearer",
+        "extra_headers": {},
+        "context_window": 256000,
+        "auto_compact_threshold_percent": null,
+        "use_concise": false,
+        "agent_type": "grok-build-plan",
+        "inference_idle_timeout_secs": null,
+        "max_retries": null,
+        "subagent_rate_limit_max_attempts": null,
+        "hidden": false,
+        "supported_in_api": true,
+        "reasoning_effort": null,
+        "supports_reasoning_effort": false,
+        "supports_backend_search": false,
+        "compactions_remaining": null,
+        "compaction_at_tokens": null,
+        "show_model_fingerprint": false,
+        "stream_tool_calls": null,
+        "laziness_detector": {
+          "enabled": false,
+          "max_nudges_per_session": 0,
+          "idle_threshold_ms": null,
+          "min_confidence": null,
+          "include_reasoning": null
+        }
+      },
+      "api_key": null,
+      "env_key": null,
+      "api_base_url": null
+    }
+  }
+}

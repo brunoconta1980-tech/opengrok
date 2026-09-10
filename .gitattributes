@@ -1,0 +1,15 @@
+# ==============================================================================
+# OpenGrok CLI — .gitattributes
+# ==============================================================================
+
+# Binários nativos e arquivos empacotados
+*.xz binary
+vendor/rg* binary
+downloads/*.xz binary
+
+# Scripts e arquivos texto
+*.md text
+*.toml text
+*.json text
+*.sh text eol=lf
+*.py text eol=lf

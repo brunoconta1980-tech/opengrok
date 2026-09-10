@@ -1,0 +1,186 @@
+[cli]
+installer = "internal"
+auto_update = false
+
+[endpoints]
+models_base_url = "http://127.0.0.1:5174/v1"
+models_list_url = "http://127.0.0.1:5174/v1/models"
+cli_chat_proxy_base_url = "http://127.0.0.1:5174/v1"
+xai_api_base_url = "http://127.0.0.1:5174/v1"
+feedback_base_url = "http://127.0.0.1:5174/v1/feedback"
+
+[models]
+default = "local-llama"
+stream_tool_calls = true
+temperature = 0.7
+top_p = 0.95
+max_completion_tokens = 8192
+web_search = "local-llama"
+
+# Modelo principal roteado pelo Bridge Universal com CORS PLENO
+[model.local-llama]
+model = "local-llama"
+name = "Local LLaMA (Bridge 5174 -> llama-server)"
+base_url = "http://127.0.0.1:5174/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+supports_backend_search = true
+
+# Alias default
+[model.default]
+model = "local-llama"
+name = "Default Local LLaMA"
+base_url = "http://127.0.0.1:5174/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+supports_backend_search = true
+
+# Alias grok-build
+[model.grok-build]
+model = "local-llama"
+name = "Grok Build (Local LLaMA)"
+base_url = "http://127.0.0.1:5174/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+supports_backend_search = true
+
+# Alias grok-2
+[model.grok-2]
+model = "local-llama"
+name = "Grok 2 (Local LLaMA)"
+base_url = "http://127.0.0.1:5174/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+supports_backend_search = true
+
+# Rota direta para porta 5173
+[model.llama-5173]
+model = "llama-5173"
+name = "LLaMA Server 5173 Direto"
+base_url = "http://127.0.0.1:5173/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+
+# Rota direta para porta 8080 (padrão llama.cpp)
+[model.llama-8080]
+model = "llama-8080"
+name = "LLaMA Server 8080 Direto"
+base_url = "http://127.0.0.1:8080/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+
+# Rota direta para porta 8081
+[model.llama-8081]
+model = "llama-8081"
+name = "LLaMA Server 8081 Direto"
+base_url = "http://127.0.0.1:8081/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+
+# Rota direta para Ollama (11434)
+[model.ollama-11434]
+model = "ollama-11434"
+name = "Ollama 11434 Direto"
+base_url = "http://127.0.0.1:11434/v1"
+api_key = "local"
+api_backend = "chat_completions"
+context_window = 131072
+temperature = 0.7
+top_p = 0.95
+stream_tool_calls = true
+
+[paths]
+extra_skill_dirs = [
+    "/home/userk21/open_grok_cli/skills",
+    "/home/userk21/open_grok_cli/skills",
+]
+extra_rule_dirs = [
+    "/home/userk21/open_grok_cli/rules",
+]
+
+[skills]
+paths = [
+    "/home/userk21/open_grok_cli/skills",
+    "/home/userk21/open_grok_cli/skills",
+]
+
+[subagents]
+enabled = true
+limit_behavior = "queue"
+max_concurrent = 4
+max_depth = 3
+
+[subagents.models]
+general-purpose = "local-llama"
+explore = "local-llama"
+plan = "local-llama"
+researcher = "local-llama"
+reviewer = "local-llama"
+implementer = "local-llama"
+test-writer = "local-llama"
+security-auditor = "local-llama"
+design-doc-writer = "local-llama"
+design-doc-reviewer = "local-llama"
+
+[mcp_servers.web_access]
+command = "python3"
+args = ["/home/userk21/open_grok_cli/bin/mcp_web.py"]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+
+[telemetry]
+otel_enabled = false
+mixpanel_enabled = false
+trace_upload = false
+
+[features]
+telemetry = "off"
+feedback = false
+managed_config = false
+remote_fetch = false
+web_fetch = true
+campaigns = false
+ask_user_question = true
+write_file = true
+backend_tools = true
+
+[marketplace]
+default_skills_installs_purged = true
+official_marketplace_auto_installed = false
+sources = []
+
+[ui]
+max_thoughts_width = 120
+fork_secondary_model = "local-llama"
+yolo = false
+compact_mode = false
+permission_mode = "always-approve"

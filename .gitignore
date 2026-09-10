@@ -1,0 +1,51 @@
+# ==============================================================================
+# OpenGrok CLI — .gitignore
+# Mantém o repositório leve, ágil e limpo de dados temporários e sessões.
+# ==============================================================================
+
+# Sessões, históricos de conversa e memória local
+sessions/*
+!sessions/.gitkeep
+
+# Logs de execução e depuração
+logs/*
+!logs/.gitkeep
+*.log
+GROK.py.log
+open_grok_server.log
+open_grok_server.pid
+
+# Arquivos de rastreamento e cache de memória
+memtrace/*
+!memtrace/.gitkeep
+debug/*
+!debug/.gitkeep
+
+# Arquivos de trava e estado de sessão ativa
+active_sessions.lock
+active_sessions.json
+managed_config.lock
+worktrees.db
+last-copy.txt
+tip_cursor.json
+slash-mru.json
+
+# Caches de Python
+__pycache__/
+*.py[cod]
+
+# Arquivos de backup
+*.bak
+*.orig
+downloads/*-test
+
+# Binários descompactados grandes (>100MB)
+# O repositório rastreia e distribui a versão oficial compactada (downloads/grok-1.0.24-linux-x86_64.xz, 43MB)
+# que é descompactada em ~1.4s pelo install.sh ou na primeira execução do opengrok.
+downloads/grok-1.0.24-linux-x86_64
+downloads/grok-linux-x86_64
+downloads/grok-1.0.24-linux-x86_64.orig
+
+# Marketplace cache
+marketplace-cache/*
+!marketplace-cache/.gitkeep
